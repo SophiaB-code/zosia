@@ -53,7 +53,17 @@ WHERE jpf.salary_year_avg IS NOT NULL
 ORDER BY jpf.salary_year_avg DESC 
 LIMIT 10;
 ```
+![Top Paying Roles](assets/Q1_visual)
+*Bar graph visualizing the salary for the top 10 salaries for data anlysts; ChatGPT generated this graph from my SQL query results*
+
 ### 2. Skills for Top-Paying Jobs
+
+This query identifies the **top 10 highest-paying Data Analyst roles** (remote only) and then extracts the **skills associated** with those specific job postings.
+
+It uses a Common Table Expression (CTE) to first select the top-paying remote Data Analyst jobs based on average annual salary. 
+The final result joins this list with the skills dimension tables to reveal which technical skills are most commonly required in the most lucrative positions.
+
+This analysis helps highlight which tools, technologies, or programming languages are most valuable to secure a high-paying remote role as a Data Analyst.
 
 ``` sql
 WITH top_paying_jobs AS (
@@ -82,6 +92,13 @@ JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
 
 
 ```
+Here's the breakdown of the most demanded skills for the top 10 highest paying data analyst jobs in 2023:
+- **SQL** is leading with a bold count of 8.
+- **Python** follows closely with a bold count of 7.
+- **Tabeleau** is also highy sought after, with a bold count of 6. Other skills like **R, Snowflake, Pandas** and **Excel** show varying degrees of demand.
+
+![Top Paying Skills](assets/Q2_visual)
+
 ### 3. Most In-Demand Skills
 
 ``` sql
