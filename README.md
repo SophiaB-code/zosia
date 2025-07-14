@@ -1,6 +1,3 @@
-# Introduction
-[project_sql folder](/project_sql)
-
 # 📊 IT Job Market Data Analysis (SQL Project)
 
 ## 📁 Introduction  
@@ -29,13 +26,34 @@ I applied various techniques such as filtering, joining tables, using subqueries
 
 
 ## 📈 The Analysis  
-Using SQL, I examined:
-- Average salaries by job title and location  
-- The most in-demand skills in job postings  
-- Differences between remote and on-site job offers  
-- Salary distribution across experience levels  
 
-All queries and results are documented and structured within the `/project_sql` folder.
+### 1. Top Paying Data Analyst Jobs
+
+This query filters job postings for **Data Analyst** positions based on **average yearly salary** and **location**, with a specific focus on **remote jobs**. The goal is to identify the highest-paying options available on the market.
+
+By narrowing the results to remote jobs, this analysis highlights top-paying roles that offer flexibility and are accessible regardless of geographic location. It provides valuable insight for job seekers who are looking for well-compensated, remote-friendly data analyst positions.
+```sql
+SELECT 
+    job_id,
+    cd.name AS company_name,
+    job_title,
+    job_location,
+    job_schedule_type,
+    salary_year_avg,
+    job_posted_date
+  
+FROM
+  job_postings_fact jpf
+LEFT JOIN company_dim cd ON jpf.company_id = cd.company_id
+WHERE jpf.salary_year_avg IS NOT NULL 
+  AND jpf.salary_year_avg > 0
+  AND jpf.job_title IS NOT NULL
+  AND jpf.job_location = 'Anywhere'
+  AND jpf.job_title_short = 'Data Analyst'
+ORDER BY jpf.salary_year_avg DESC 
+LIMIT 10;
+```
+
 
 ## 🎓 What I Learned  
 Through this project, I improved my ability to:
