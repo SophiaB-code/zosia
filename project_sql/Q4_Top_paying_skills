@@ -1,0 +1,11 @@
+SELECT
+    sd.skills,
+    ROUND(AVG(salary_year_avg), 0) AS average_salary,
+    COUNT(jpf.job_id) AS job_count
+FROM job_postings_fact jpf
+JOIN skills_job_dim sjd ON jpf.job_id = sjd.job_id
+JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+WHERE salary_year_avg IS NOT NULL
+  AND jpf.job_title_short = 'Data Analyst'
+GROUP BY sd.skills
+ORDER BY average_salary DESC

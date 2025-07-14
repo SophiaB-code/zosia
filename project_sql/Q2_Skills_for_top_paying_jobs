@@ -1,0 +1,24 @@
+WITH top_paying_jobs AS (
+    SELECT 
+        job_id,
+        cd.name AS company_name,
+        job_title,
+        salary_year_avg
+    FROM job_postings_fact jpf
+    LEFT JOIN company_dim cd ON jpf.company_id = cd.company_id
+    WHERE jpf.salary_year_avg IS NOT NULL 
+      AND jpf.salary_year_avg > 0
+      AND jpf.job_title IS NOT NULL
+      AND jpf.job_location = 'Anywhere'
+      AND jpf.job_title_short = 'Data Analyst'
+    ORDER BY jpf.salary_year_avg DESC 
+    LIMIT 10
+
+)
+SELECT 
+    tpj.*,
+    sd.skills
+FROM top_paying_jobs tpj
+JOIN skills_job_dim sjd ON tpj.job_id = sjd.job_id
+JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+
