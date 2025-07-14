@@ -27,7 +27,7 @@ I applied various techniques such as filtering, joining tables, using subqueries
 
 ## 📈 The Analysis  
 
-### 1. Top Paying Data Analyst Jobs
+### 1. Top-Paying Data Analyst Jobs
 
 This query filters job postings for **Data Analyst** positions based on **average yearly salary** and **location**, with a specific focus on **remote jobs**. The goal is to identify the highest-paying options available on the market.
 
@@ -52,6 +52,110 @@ WHERE jpf.salary_year_avg IS NOT NULL
   AND jpf.job_title_short = 'Data Analyst'
 ORDER BY jpf.salary_year_avg DESC 
 LIMIT 10;
+```
+### 2. Skills for Top-Paying Jobs
+
+``` sql
+WITH top_paying_jobs AS (
+    SELECT 
+        job_id,
+        cd.name AS company_name,
+        job_title,
+        salary_year_avg
+    FROM job_postings_fact jpf
+    LEFT JOIN company_dim cd ON jpf.company_id = cd.company_id
+    WHERE jpf.salary_year_avg IS NOT NULL 
+      AND jpf.salary_year_avg > 0
+      AND jpf.job_title IS NOT NULL
+      AND jpf.job_location = 'Anywhere'
+      AND jpf.job_title_short = 'Data Analyst'
+    ORDER BY jpf.salary_year_avg DESC 
+    LIMIT 10
+
+)
+SELECT 
+    tpj.*,
+    sd.skills
+FROM top_paying_jobs tpj
+JOIN skills_job_dim sjd ON tpj.job_id = sjd.job_id
+JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+
+
+```
+### 3. Most In-Demand Skills
+
+``` sql
+SELECT 
+    sd.type AS skill_type,
+    sd.skills,
+    COUNT(sd.skills) AS skill_count
+FROM job_postings_fact
+INNER JOIN skills_job_dim sjd ON job_postings_fact.job_id = sjd.job_id
+INNER JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+WHERE job_title_short = 'Data Analyst'
+GROUP BY sd.skills, sd.type, sd.skill_id
+ORDER BY skill_count DESC
+LIMIT 5;
+```
+### 4. Skills with Higher Salaries
+
+``` sql
+SELECT
+    sd.skills,
+    ROUND(AVG(salary_year_avg), 0) AS average_salary,
+    COUNT(jpf.job_id) AS job_count
+FROM job_postings_fact jpf
+JOIN skills_job_dim sjd ON jpf.job_id = sjd.job_id
+JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+WHERE salary_year_avg IS NOT NULL
+  AND jpf.job_title_short = 'Data Analyst'
+GROUP BY sd.skills
+ORDER BY average_salary DESC
+```
+### 5. Optimal Skills for Job Market Value
+
+``` sql
+WITH average_salary AS 
+(
+    SELECT 
+        sd.skill_id,
+        sd.skills,
+        ROUND(AVG(jpf.salary_year_avg), 0) AS average_salary
+    FROM job_postings_fact jpf
+    JOIN skills_job_dim sjd ON jpf.job_id = sjd.job_id
+    JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+    WHERE salary_year_avg IS NOT NULL
+      AND jpf.job_title_short = 'Data Analyst'
+      AND job_work_from_home = True
+    GROUP BY sd.skill_id
+), skills_demand AS (
+        SELECT 
+            sd.skill_id,
+            sd.skills,
+            COUNT(jpf.job_id) AS skill_count
+        FROM job_postings_fact jpf
+        INNER JOIN skills_job_dim sjd ON jpf.job_id = sjd.job_id
+        INNER JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
+        WHERE jpf.job_title_short = 'Data Analyst'
+        AND  jpf.salary_year_avg IS NOT NULL
+        AND jpf.job_work_from_home = True
+        GROUP BY sd.skill_id
+
+)
+
+SELECT 
+    sd.skill_id,
+    sd.skills,
+    skill_count,
+    average_salary
+FROM skills_demand sd
+INNER JOIN average_salary  ON sd.skill_id = average_salary.skill_id
+WHERE skill_count > 10
+ORDER BY skill_count DESC, average_salary DESC
+LIMIT 25
+
+
+
 ```
 
 
